@@ -12,7 +12,7 @@ import {
 import { fetchByPath, getOverrideProps, validateField } from "./utils";
 import { generateClient } from "aws-amplify/api";
 import { getRelationship } from "./graphql/queries";
-import { updateRelationship } from "./graphql/mutations";
+import { updateRelationship, deleteRelationship } from "./graphql/mutations";
 const client = generateClient();
 export default function RelationshipUpdateForm(props) {
   const {
