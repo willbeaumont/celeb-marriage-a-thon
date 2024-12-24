@@ -6,23 +6,71 @@ adding a new "isDone" field as a boolean. The authorization rule below
 specifies that any user authenticated via an API key can "create", "read",
 "update", and "delete" any "Todo" records.
 =========================================================================*/
-const schema = a.schema({
-  Todo: a
-    .model({
-      content: a.string(),
-    })
-    .authorization((allow) => [allow.publicApiKey()]),
-});
+const schema = a
+  .schema({
+    // // person info
+    // Contact: a.customType({
+    //   name: a.string(),
+    //   email: a.email(),
+    //   notify: a.boolean(),
+    // }),
+
+    // // relationship start stop data
+    // UnionDate: a.customType({
+    //   start: a.date(),
+    //   end: a.date(),
+    // }),
+
+    // join table to relate user and celebrity relationships
+    RelationshipCelebrity: a
+      .model({
+        relationshipId: a.id().required(),
+        celebrityId: a.id().required(),
+
+        relationship: a.belongsTo("Relationship", "relationshipId"),
+        celebrity: a.belongsTo("Celebrity", "celebrityId"),
+      })
+      .authorization((allow) => [allow.owner()]),
+
+    // relationships of users
+    Relationship: a
+      .model({
+        celebrities: a.hasMany("RelationshipCelebrity", "relationshipId"),
+
+        ownerName: a.string(),
+        notifyOwner: a.boolean(),
+        spouseName: a.string(),
+        spouseemail: a.email(),
+        notifySpouse: a.boolean(),
+        unionStartDate: a.date(),
+      })
+      .authorization((allow) => [allow.owner()]),
+
+    // celebrity unions for people to measure against
+    Celebrity: a.model({
+      // fun name of the match-up
+      unionName: a.string(),
+      // full name of half the union
+      firstPerson: a.string(),
+      // full name of the other half
+      secondPerson: a.string(),
+      // number of days the relationship lasted
+      lengthInDays: a.integer(),
+      // message to the user when the pass
+      passingMessage: a.string(),
+
+      // users that have surpassed this union
+      relationships: a.hasMany("RelationshipCelebrity", "celebrityId"),
+    }),
+  })
+  .authorization((allow) => [allow.authenticated()]);
 
 export type Schema = ClientSchema<typeof schema>;
 
 export const data = defineData({
   schema,
   authorizationModes: {
-    defaultAuthorizationMode: "apiKey",
-    apiKeyAuthorizationMode: {
-      expiresInDays: 30,
-    },
+    defaultAuthorizationMode: "userPool",
   },
 });
 
